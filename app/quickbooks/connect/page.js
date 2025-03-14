@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
-const QuickBooksConnectPage = () => {
+export const dynamic = 'force-dynamic';
+
+function ConnectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
@@ -85,6 +87,14 @@ const QuickBooksConnectPage = () => {
         </button>
       </div>
     </div>
+  );
+}
+
+const QuickBooksConnectPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading connection page...</div>}>
+      <ConnectContent />
+    </Suspense>
   );
 };
 

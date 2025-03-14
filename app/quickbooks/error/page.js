@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-const QuickBooksErrorPage = () => {
+export const dynamic = 'force-dynamic';
+
+function ErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorMessage = searchParams.get('message') || 'An unknown error occurred';
@@ -68,6 +70,14 @@ const QuickBooksErrorPage = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+const QuickBooksErrorPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading error details...</div>}>
+      <ErrorContent />
+    </Suspense>
   );
 };
 

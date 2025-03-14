@@ -13,7 +13,7 @@ export default function TermsPage() {
         <h2 className="text-xl font-semibold mt-6 mb-3">2. Description of Service</h2>
         <p>
           Our application provides integration with QuickBooks Online to help users manage their financial data.
-          The service is provided "as is" and we make no warranties regarding its functionality or availability.
+          The service is provided &quot;as is&quot; and we make no warranties regarding its functionality or availability.
         </p>
         
         <h2 className="text-xl font-semibold mt-6 mb-3">3. User Accounts</h2>

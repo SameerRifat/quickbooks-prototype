@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import QuickBooksConnect from '../../components/QuickBooksConnect';
 import CustomersList from '../../components/CustomersList';
 import InvoicesList from '../../components/InvoicesList';
 import ReportViewer from '../../components/ReportViewer';
 
-const QuickBooksDashboard = () => {
+export const dynamic = 'force-dynamic';
+
+function DashboardContent() {
   const router = useRouter();
   const [isConnected, setIsConnected] = useState(false);
   const [isCheckingConnection, setIsCheckingConnection] = useState(true);
@@ -18,6 +20,33 @@ const QuickBooksDashboard = () => {
   const [customersError, setCustomersError] = useState(null);
   const [invoicesError, setInvoicesError] = useState(null);
   const [activeTab, setActiveTab] = useState('customers');
+
+  const fetchInvoices = useCallback(async () => {
+    if (!isConnected) return;
+    
+    setLoadingInvoices(true);
+    setInvoicesError(null);
+    
+    try {
+      console.log('Fetching QuickBooks invoices...');
+      const response = await fetch('/api/quickbooks/invoices');
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Invoices fetched successfully');
+        setInvoices(data);
+      } else {
+        const errorData = await response.json();
+        console.error('Error fetching invoices:', errorData);
+        setInvoicesError(errorData.error || 'Failed to fetch invoices');
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      setInvoicesError(error.message || 'Failed to fetch invoices');
+    } finally {
+      setLoadingInvoices(false);
+    }
+  }, [isConnected]);
 
   // Check if connected to QuickBooks
   useEffect(() => {
@@ -46,7 +75,7 @@ const QuickBooksDashboard = () => {
     };
 
     checkConnection();
-  }, []);
+  }, [fetchInvoices]);
 
   const fetchCustomers = async () => {
     if (!isConnected) return;
@@ -72,33 +101,6 @@ const QuickBooksDashboard = () => {
       setCustomersError(error.message || 'Failed to fetch customers');
     } finally {
       setLoadingCustomers(false);
-    }
-  };
-
-  const fetchInvoices = async () => {
-    if (!isConnected) return;
-    
-    setLoadingInvoices(true);
-    setInvoicesError(null);
-    
-    try {
-      console.log('Fetching QuickBooks invoices...');
-      const response = await fetch('/api/quickbooks/invoices');
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Invoices fetched successfully');
-        setInvoices(data);
-      } else {
-        const errorData = await response.json();
-        console.error('Error fetching invoices:', errorData);
-        setInvoicesError(errorData.error || 'Failed to fetch invoices');
-      }
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-      setInvoicesError(error.message || 'Failed to fetch invoices');
-    } finally {
-      setLoadingInvoices(false);
     }
   };
 
@@ -208,6 +210,14 @@ const QuickBooksDashboard = () => {
         </div>
       )}
     </div>
+  );
+}
+
+const QuickBooksDashboard = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 };
 
